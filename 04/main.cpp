@@ -30,7 +30,7 @@ struct Section
     size_t sectionEnd;
 };
 
-bool DoSectionsOverlap(pair<Section, Section> elvesPair)
+bool DoesOneSectionContainTheOther(pair<Section, Section> elvesPair)
 {
     if(elvesPair.first.sectionBegin == elvesPair.second.sectionBegin)
         return true;
@@ -42,6 +42,20 @@ bool DoSectionsOverlap(pair<Section, Section> elvesPair)
         return true;
 
     return false;
+}
+
+bool DoSectionsIntersect(pair<Section, Section> elvesPair)
+{
+    if(elvesPair.first.sectionBegin == elvesPair.second.sectionBegin)
+        return true;
+
+    if(elvesPair.second.sectionBegin < elvesPair.first.sectionBegin)
+        swap(elvesPair.first, elvesPair.second);
+
+    if(elvesPair.first.sectionEnd < elvesPair.second.sectionBegin)
+        return false;
+
+    return true;
 }
 
 pair<Section, Section> GetElvesPair(const string& inputLine)
@@ -57,8 +71,20 @@ uint32_t GetPartOneAnswer(const vector<string>& inputLines)
 {
     auto overlappingPairs = inputLines
         | ranges::views::transform(GetElvesPair)
-        | ranges::views::transform(DoSectionsOverlap)
-        | ranges::views::transform([](const bool isOverlapping){ return static_cast<uint32_t>(isOverlapping); });
+        | ranges::views::transform(DoesOneSectionContainTheOther)
+        | ranges::views::transform([](const bool boolValue){ return static_cast<uint32_t>(boolValue); })
+        ;
+
+    return accumulate(overlappingPairs.begin(), overlappingPairs.end(), 0);
+}
+
+uint32_t GetPartTwoAnswer(const vector<string>& inputLines)
+{
+    auto overlappingPairs = inputLines
+        | ranges::views::transform(GetElvesPair)
+        | ranges::views::transform(DoSectionsIntersect)
+        | ranges::views::transform([](const bool boolValue){ return static_cast<uint32_t>(boolValue); })
+        ;
 
     return accumulate(overlappingPairs.begin(), overlappingPairs.end(), 0);
 }
@@ -68,6 +94,7 @@ int main()
     vector<string> inputLines = GetFileContents("input");
 
     cout << "Part 1: " << GetPartOneAnswer(inputLines) << endl;
+    cout << "Part 2: " << GetPartTwoAnswer(inputLines) << endl;
 
     return 0;
 }
