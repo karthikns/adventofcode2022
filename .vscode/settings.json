@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "concepts": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "initializer_list": "cpp"
     }
 }
