@@ -54,6 +54,16 @@ uint32_t GetPriority(const array<bool, 53>& first, const array<bool, 53>& second
     return {};
 }
 
+uint32_t GetPriority(const array<bool, 53>& first, const array<bool, 53>& second, const array<bool, 53>& third)
+{
+    for(size_t index = 0; index < first.size(); ++index)
+        if(first[index] && second[index] && third[index])
+            return index;
+
+    assert(false);
+    return {};
+}
+
 uint32_t GetPartOneScore(const vector<string>& inputLines)
 {
     uint32_t score = 0;
@@ -72,11 +82,31 @@ uint32_t GetPartOneScore(const vector<string>& inputLines)
     return score;
 }
 
+uint32_t GetPartTwoScore(const vector<string>& inputLines)
+{
+    uint32_t score = 0;
+    for(size_t index = 0; index + 2 < inputLines.size(); index += 3)
+    {
+        const string& firstInputLine = inputLines[index];
+        const string& secondInputLine = inputLines[index + 1];
+        const string& thirdInputLine = inputLines[index + 2];
+
+        const array<bool, 53> firstCharacterPresenceArray = GetCharacterPresenceArray(firstInputLine.begin(), firstInputLine.end());
+        const array<bool, 53> secondCharacterPresenceArray = GetCharacterPresenceArray(secondInputLine.begin(), secondInputLine.end());
+        const array<bool, 53> thirdCharacterPresenceArray = GetCharacterPresenceArray(thirdInputLine.begin(), thirdInputLine.end());
+
+        score += GetPriority(firstCharacterPresenceArray, secondCharacterPresenceArray, thirdCharacterPresenceArray);
+    }
+
+    return score;
+}
+
 int main()
 {
     vector<string> inputLines = GetFileContents("input");
 
     cout << "Part 1: " << GetPartOneScore(inputLines) << endl;
+    cout << "Part 2: " << GetPartTwoScore(inputLines) << endl;
 
     return 0;
 }
