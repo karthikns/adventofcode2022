@@ -2,6 +2,7 @@
     "files.associations": {
         "concepts": "cpp",
         "ranges": "cpp",
-        "initializer_list": "cpp"
+        "initializer_list": "cpp",
+        "array": "cpp"
     }
 }
