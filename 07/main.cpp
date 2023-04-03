@@ -233,11 +233,57 @@ size_t GetPartOneAnswer(const vector<string>& inputLines)
     return returnValue;
 }
 
+size_t GetSizeOfDirectoryToDeleteInternal(shared_ptr<Directory> root, const size_t freeSpaceNeeded, size_t &result)
+{
+    vector<shared_ptr<File>> filePtrs = root->GetFiles();
+    auto fileSizeRange = filePtrs | views::transform([](auto filePtr) { return filePtr->GetSize(); });
+
+    size_t currentDirectorySize = accumulate(fileSizeRange.begin(), fileSizeRange.end(), size_t(0));
+
+    vector<shared_ptr<Directory>> directoryPtrs = root->GetSubDirectories();
+    for(auto subdirectory: directoryPtrs)
+    {
+        currentDirectorySize += GetSizeOfDirectoryToDeleteInternal(subdirectory, freeSpaceNeeded, result);
+    }
+
+    if(currentDirectorySize >= freeSpaceNeeded && currentDirectorySize < result)
+        result = currentDirectorySize;
+
+    return currentDirectorySize;
+}
+
+// @return The size of current directory
+size_t GetSizeOfDirectoryToDelete(shared_ptr<Directory> root)
+{
+    size_t result = SIZE_MAX;
+
+    const size_t usedSpace = GetSizeOfDirectoryToDeleteInternal(root, 0, result);
+    const size_t freeSpaceAvailable = 70'000'000ul - usedSpace;
+    const size_t freeSpaceNeeded = 30'000'000ul - freeSpaceAvailable;
+
+    result = SIZE_MAX;
+    GetSizeOfDirectoryToDeleteInternal(root, freeSpaceNeeded, result);
+
+    return result;
+}
+
+size_t GetPartTwoAnswer(const vector<string>& inputLines)
+{
+    shared_ptr<Directory> root = make_shared<Directory>("/", weak_ptr<Directory>());
+    FileSystemNavigator navigator(root);
+
+    CreateRootDirectoryLayout(inputLines, navigator);
+    size_t returnValue = GetSizeOfDirectoryToDelete(root);
+
+    return returnValue;
+}
+
 int main()
 {
     vector<string> inputLines = GetFileContents("input");
 
     cout << "Part 1: " << GetPartOneAnswer(inputLines) << endl;
+    cout << "Part 2: " << GetPartTwoAnswer(inputLines) << endl;
 
     return 0;
 }
