@@ -86,7 +86,7 @@ vector<Instruction> GetInstructions(ranges::input_range auto&& instructionsInput
     return vector<Instruction>(instructionsRange.begin(), instructionsRange.end());
 }
 
-void ProcessInstructions(vector<vector<char>>& stacks, const vector<Instruction>& instructions)
+void ProcessInstructionsPartOne(vector<vector<char>>& stacks, const vector<Instruction>& instructions)
 {
     for(const Instruction& instruction: instructions)
     {
@@ -98,7 +98,23 @@ void ProcessInstructions(vector<vector<char>>& stacks, const vector<Instruction>
     }
 }
 
-string GetPartOneAnswer(const vector<string>& inputLines)
+void ProcessInstructionsPartTwo(vector<vector<char>>& stacks, const vector<Instruction>& instructions)
+{
+    for(const Instruction& instruction: instructions)
+    {
+        const unsigned int itemsToMove = instruction.count;
+        vector<char>& fromStack = stacks[instruction.from];
+        vector<char>& toStack = stacks[instruction.to];
+
+        auto itemsToMoveBegin = fromStack.end() - instruction.count;
+        toStack.insert(toStack.end(), itemsToMoveBegin, fromStack.end());
+        fromStack.erase(itemsToMoveBegin, fromStack.end());
+    }
+}
+
+using InstructionProcessorFunction = function<void(vector<vector<char>>&, const vector<Instruction>&)>;
+
+string GetAnswer(const vector<string>& inputLines, InstructionProcessorFunction instructionProcessorFunction)
 {
     auto stacksInputLines =
         inputLines
@@ -116,7 +132,7 @@ string GetPartOneAnswer(const vector<string>& inputLines)
 
     vector<Instruction> instructions = GetInstructions(instructionsInputLines);
 
-    ProcessInstructions(stacks, instructions);
+    instructionProcessorFunction(stacks, instructions);
 
     string topOfStacks;
     for(size_t index = 1; index < stacks.size(); ++index)
@@ -129,7 +145,13 @@ int main()
 {
     vector<string> inputLines = GetFileContents("input");
 
-    cout << "Part 1: " << GetPartOneAnswer(inputLines) << endl;
+    InstructionProcessorFunction instructionProcessorFunction;
+
+    instructionProcessorFunction = ProcessInstructionsPartOne;
+    cout << "Part 1: " << GetAnswer(inputLines, instructionProcessorFunction) << endl;
+
+    instructionProcessorFunction = ProcessInstructionsPartTwo;
+    cout << "Part 2: " << GetAnswer(inputLines, instructionProcessorFunction) << endl;
 
     return 0;
 }
