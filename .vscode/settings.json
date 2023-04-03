@@ -4,6 +4,7 @@
         "ranges": "cpp",
         "initializer_list": "cpp",
         "array": "cpp",
-        "numeric": "cpp"
+        "numeric": "cpp",
+        "iostream": "cpp"
     }
 }
