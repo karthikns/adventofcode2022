@@ -38,13 +38,8 @@ size_t GetIndexForCharacter(const char inputChar)
     return inputChar - 'a';
 }
 
-size_t GetPartOneAnswer(const vector<string>& inputLines)
+size_t GetIndexAfterFirstUniqueSequence(const string& inputLine, const size_t maxElementsInWindow)
 {
-    assert(inputLines.size() == 1);
-
-    const string& inputLine = inputLines.front();
-
-    const size_t maxElementsInWindow = 4;
     assert(inputLine.size() > maxElementsInWindow);
 
     array<size_t, 26> window{};
@@ -56,7 +51,7 @@ size_t GetPartOneAnswer(const vector<string>& inputLines)
 
     const size_t uniqueCharactersCount = GetUniqueCharacterCountInWindow(window);
     if(uniqueCharactersCount == maxElementsInWindow)
-        return 4;
+        return maxElementsInWindow;
 
     for(const size_t index: views::iota(maxElementsInWindow) | views::take(inputLine.size() - 1))
     {
@@ -72,11 +67,28 @@ size_t GetPartOneAnswer(const vector<string>& inputLines)
     return {};
 }
 
+size_t GetPartOneAnswer(const vector<string>& inputLines)
+{
+    assert(inputLines.size() == 1);
+    const string& inputLine = inputLines.front();
+
+    return GetIndexAfterFirstUniqueSequence(inputLine, 4);
+}
+
+size_t GetPartTwoAnswer(const vector<string>& inputLines)
+{
+    assert(inputLines.size() == 1);
+    const string& inputLine = inputLines.front();
+
+    return GetIndexAfterFirstUniqueSequence(inputLine, 14);
+}
+
 int main()
 {
     vector<string> inputLines = GetFileContents("input");
 
     cout << "Part 1: " << GetPartOneAnswer(inputLines) << endl;
+    cout << "Part 2: " << GetPartTwoAnswer(inputLines) << endl;
 
     return 0;
 }
