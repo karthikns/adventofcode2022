@@ -113,11 +113,75 @@ size_t GetPartOneAnswer(const vector<string>& inputLines)
     return GetNumberOfTreesVisible(grid);
 }
 
+size_t GetMaxScenicScore(const vector<vector<int>>& grid)
+{
+    const size_t rowCount = grid.size();
+    const size_t columnCount = grid.front().size();
+
+    size_t maxScenicScore = 0;
+    for(const size_t rowIndex: views::iota(1) | views::take(rowCount - 2))
+    {
+        for(const size_t columnIndex: views::iota(1) | views::take(columnCount - 2))
+        {
+            const size_t currentTreeValue = grid[rowIndex][columnIndex];
+
+            // travel left
+            size_t leftScenicScore = 0;
+            for(long leftRunner = columnIndex - 1; leftRunner >= 0; --leftRunner)
+            {
+                ++leftScenicScore;
+                if(grid[rowIndex][leftRunner] >= currentTreeValue)
+                    break;
+            }
+
+            // travel right
+            size_t rightScenicScore = 0;
+            for(long rightRunner = columnIndex + 1; rightRunner < columnCount; ++rightRunner)
+            {
+                ++rightScenicScore;
+                if(grid[rowIndex][rightRunner] >= currentTreeValue)
+                    break;
+            }
+
+            // travel top
+            size_t topScenicScore = 0;
+            for(long topRunner = rowIndex - 1; topRunner >= 0; --topRunner)
+            {
+                ++topScenicScore;
+                if(grid[topRunner][columnIndex] >= currentTreeValue)
+                    break;
+            }
+
+            // travel bottom
+            size_t bottomScenicScore = 0;
+            for(long bottomRunner = rowIndex + 1; bottomRunner < rowCount; ++bottomRunner)
+            {
+                ++bottomScenicScore;
+                if(grid[bottomRunner][columnIndex] >= currentTreeValue)
+                    break;
+            }
+
+            const size_t scenicScore = leftScenicScore * rightScenicScore * topScenicScore * bottomScenicScore;
+            maxScenicScore = max(maxScenicScore, scenicScore);
+        }
+    }
+
+    return maxScenicScore;
+}
+
+size_t GetPartTwoAnswer(const vector<string>& inputLines)
+{
+    auto range = inputLines | views::transform([](const string& inputLine) { return GetTreeHeights(inputLine); });
+    vector<vector<int>> grid(range.begin(), range.end());
+    return GetMaxScenicScore(grid);
+}
+
 int main()
 {
     vector<string> inputLines = GetFileContents("input");
 
     cout << "Part 1: " << GetPartOneAnswer(inputLines) << endl;
+    cout << "Part 2: " << GetPartTwoAnswer(inputLines) << endl;
 
     return 0;
 }
