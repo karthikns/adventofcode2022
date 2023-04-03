@@ -3,6 +3,7 @@
         "concepts": "cpp",
         "ranges": "cpp",
         "initializer_list": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "numeric": "cpp"
     }
 }
