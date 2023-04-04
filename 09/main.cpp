@@ -41,17 +41,52 @@ public:
     {
     }
 
+    Point<T>& operator=(const Point<T>& other)
+    {
+        x = other.x;
+        y = other.y;
+        return *this;
+    }
+
+    Point<T> operator+(const Point<T>& other) const
+    {
+        Point<T> result(x + other.x, y + other.y);
+        return result;
+    }
+
+    Point<T>& operator+=(const Point<T>& other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+
     T& x = this->first;
     T& y = this->second;
 };
 
-size_t SimulateHeadMovementAndGetUniqueTailPositionCount(const vector<pair<char, int>>& instructions)
+Point<int> MoveTail(const Point<int>& newHead, const Point<int>& oldTail)
 {
-    Point<int> head = { 0, 0 };
-    Point<int> tail = { 0, 0 };
+    Point<int> deltaToMoveTail;
+    if(newHead.x == oldTail.x || newHead.y == oldTail.y)
+    {
+        deltaToMoveTail.x = clamp((newHead.x - oldTail.x) / 2, -1, 1);
+        deltaToMoveTail.y = clamp((newHead.y - oldTail.y) / 2, -1, 1);
+    }
+    else if(abs(newHead.x - oldTail.x) == 2 || abs(newHead.y - oldTail.y) == 2)
+    {
+        deltaToMoveTail.x = clamp((newHead.x - oldTail.x), -1, 1);
+        deltaToMoveTail.y = clamp((newHead.y - oldTail.y), -1, 1);
+    }
 
+    return oldTail + deltaToMoveTail;
+}
+size_t SimulateHeadMovementAndGetUniqueTailPositionCount(const vector<pair<char, int>>& instructions, const size_t ropeSize)
+{
+    assert(ropeSize >= 2);
+    vector<Point<int>> rope(ropeSize);
     set<Point<int>> tailVisitLocations;
-    tailVisitLocations.emplace(tail);
+    tailVisitLocations.emplace(rope.back());
 
     for(const pair<char, int>& instruction: instructions)
     {
@@ -78,31 +113,19 @@ size_t SimulateHeadMovementAndGetUniqueTailPositionCount(const vector<pair<char,
 
         for(size_t index: views::iota(1) | views::take(instruction.second))
         {
-            head.x += direction.x;
-            head.y += direction.y;
-
-            if(head == tail)
-                continue;
-
-            Point<int> deltaToMoveTail;
-            if(head.x == tail.x || head.y == tail.y)
+            rope.front() = rope.front() + direction;
+            for(auto tailIt = rope.begin() + 1; tailIt != rope.end(); ++tailIt)
             {
-                deltaToMoveTail.x = clamp((head.x - tail.x) / 2, -1, 1);
-                deltaToMoveTail.y = clamp((head.y - tail.y) / 2, -1, 1);
-            }
-            else if(abs(head.x - tail.x) == 2 || abs(head.y - tail.y) == 2)
-            {
-                deltaToMoveTail.x = clamp((head.x - tail.x), -1, 1);
-                deltaToMoveTail.y = clamp((head.y - tail.y), -1, 1);
+                Point<int>& tail = *tailIt;
+                auto headIt = tailIt;
+                --headIt;
+                Point<int>& head = *headIt;
+
+                tail = MoveTail(head, tail);
             }
 
-            tail.x += deltaToMoveTail.x;
-            tail.y += deltaToMoveTail.y;
-
-            tailVisitLocations.emplace(tail);
+            tailVisitLocations.emplace(rope.back());
         }
-
-        cout << endl;
     }
 
     return tailVisitLocations.size();
@@ -119,7 +142,21 @@ size_t GetPartOneAnswer(const vector<string>& inputLines)
         ;
 
     vector<pair<char, int>> instructions(range.begin(), range.end());
-    return SimulateHeadMovementAndGetUniqueTailPositionCount(instructions);
+    return SimulateHeadMovementAndGetUniqueTailPositionCount(instructions, 2);
+}
+
+size_t GetPartTwoAnswer(const vector<string>& inputLines)
+{
+    auto range = inputLines
+        | views::transform([](const string& inputLine) {
+            pair<char, int> p;
+            sscanf(inputLine.c_str(), "%c %d", &p.first, &p.second);
+            return p;
+        })
+        ;
+
+    vector<pair<char, int>> instructions(range.begin(), range.end());
+    return SimulateHeadMovementAndGetUniqueTailPositionCount(instructions, 10);
 }
 
 int main()
@@ -127,6 +164,7 @@ int main()
     vector<string> inputLines = GetFileContents("input");
 
     cout << "Part 1: " << GetPartOneAnswer(inputLines) << endl;
+    cout << "Part 2: " << GetPartTwoAnswer(inputLines) << endl;
 
     return 0;
 }
